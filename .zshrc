@@ -47,7 +47,7 @@ ZSH_THEME="darkblood"
 # You can also set it to another string to have that shown instead of the default red dots.
 # e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
 # Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
-# COMPLETION_WAITING_DOTS="true"
+COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
@@ -70,6 +70,7 @@ ZSH_THEME="darkblood"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+plugins=(git)
 plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
@@ -99,38 +100,15 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
-# 42 Related aliases
-alias norm="norminette -R CheckDefine"
-alias cursus="cd ${HOME}/Documents/Cursus"
-alias cclean="$HOME/Tools/Cleaner_42/Cleaner_42.sh"
-cclean > /dev/null
-# Safety aliases
+alias ccc="cc -Wall -Wextra -Werror"
+alias zbi="cc -Wall -Wextra -Werror"
 alias rm="rm -i"
 alias cp="cp -i"
 alias mv="mv -i"
-
-# Shortcut aliases
-# alias ls="exa  --icons --group-directories-first"
 alias l="ls"
 alias ll="ls -l"
 alias la="ls -la"
 
-# Dev related aliases
-alias cleaner="$HOME/Tools/Cleaner_42/Cleaner_42.sh"
-alias ccc="cc -Wall -Wextra -Werror"
-alias zbi="cc -Wall -Wextra -Werror"
-alias ccg="cc -Wall -Wextra -Werror -g"
-alias code='/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code'
 alias zz="vim ~/.zshrc"
 alias z="cat ~/.zshrc"
 alias zc="code ~/.zshrc"
-
-alias cclean='bash ~/Cleaner_42.sh'
-export HOMEBREW_NO_AUTO_UPDATE=1
-source ~/.42-wizzard.sh
-zsh ~/.42-wizzard-updater.sh
-export PATH=~/goinfre/homebrew/bin:/Users/sel-kham/goinfre/.brew/bin:/Users/sel-kham/goinfre/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki
-# curl parrot.live
-# curl parrot.live
-export PATH=~/goinfre/homebrew/bin:/Users/sel-kham/goinfre/homebrew/bin:/Users/sel-kham/goinfre/.brew/bin:/Users/sel-kham/goinfre/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki
