@@ -35,7 +35,7 @@ ZSH_THEME="darkblood"
 # DISABLE_MAGIC_FUNCTIONS="true"
 
 # Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
+DISABLE_LS_COLORS="true"
 
 # Uncomment the following line to disable auto-setting terminal title.
 # DISABLE_AUTO_TITLE="true"
@@ -70,7 +70,6 @@ COMPLETION_WAITING_DOTS="true"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
 plugins=(git zsh-syntax-highlighting zsh-autosuggestions)
 
 source $ZSH/oh-my-zsh.sh
@@ -102,13 +101,17 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias ccc="cc -Wall -Wextra -Werror"
 alias zbi="cc -Wall -Wextra -Werror"
-alias rm="rm -i"
+alias rm="rm -irf"
 alias cp="cp -i"
 alias mv="mv -i"
+alias ls="lsd"
 alias l="ls"
 alias ll="ls -l"
 alias la="ls -la"
-
+alias v="vim"
 alias zz="vim ~/.zshrc"
 alias z="cat ~/.zshrc"
 alias zc="code ~/.zshrc"
+alias home="cd $HOME"
+alias 0="clear"
+alias desk="cd $HOME/Desktop"
