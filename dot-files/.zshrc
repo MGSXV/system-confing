@@ -8,7 +8,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="darkblood"
+ZSH_THEME="fox"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -99,6 +99,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+
 alias ccc="cc -Wall -Wextra -Werror"
 alias zbi="cc -Wall -Wextra -Werror"
 alias rm="rm -irf"
@@ -113,7 +114,18 @@ alias z="cat ~/.zshrc"
 alias zc="code ~/.zshrc"
 alias home="cd $HOME"
 alias 0="clear"
-alias code="/home/mgs/.local/share/flatpak/app/com.visualstudio.code/x86_64/stable/2326d6f469d4ee7a7e3c5382a559125f232adbc0c4efcf4ef4c1b8845db1f1ae/files/extra/vscode/bin/code"
+# My laptop
+alias code="$HOME/.local/share/flatpak/exports/bin/com.visualstudio.code"
+# Cluster
+# alias code="$HOME/.local/share/flatpak/app/com.visualstudio.code/x86_64/stable/2326d6f469d4ee7a7e3c5382a559125f232adbc0c4efcf4ef4c1b8845db1f1ae/files/extra/vscode/bin/code"
 alias desk="cd $HOME/Desktop"
 alias cclean="sh /Users/sel-kham/.cclean/Cleaner_42.sh"
 alias dc="docker compose"
+alias dcx="dc exec"
+alias dcu="dc up"
+alias dcd="dc down"
+alias dcb="dc build"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
