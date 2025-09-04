@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# -------------------- CONFIG --------------------
+SSID="$1"
+PASSWORD="$2"
+IFACE="wlp0s20f3"
+PING_TARGET="1.1.1.1"
+CONNECT_TIMEOUT=3
+SPEED_TEST_COUNT=3  # Number of pings to test speed
+# ------------------------------------------------
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log()
+{
+    echo -e "${BLUE}[*] $1${NC}"
+}
+
+success()
+{
+    echo -e "${GREEN}[+] $1${NC}"
+}
+
+err()
+{
+    echo -e "${RED}[!] $1${NC}" >&2
+}
+
+# --- Check Root ---
+if [[ $EUID -ne 0 ]]; then
+    err "Please run as root: sudo $0 \"Wifi SSID\" \"password\""
+    exit 1
+fi
+
+# --- Validate Input ---
+if [[ -z "$SSID" || -z "$PASSWORD" ]]; then
+    err "Usage: $0 \"SSID with spaces\" \"password\""
+    exit 1
+fi
+
+log "Checking if interface '$IFACE' exists..."
+if ! nmcli device status | grep -q "^$IFACE"; then
+    err "Interface '$IFACE' not found."
+    exit 1
+fi
+
+log "Scanning for networks..."
+nmcli dev wifi rescan ifname "$IFACE" >/dev/null 2>&1
+sleep 2
+
+log "Finding BSSIDs for SSID '$SSID'..."
+TEMP_FILE=$(mktemp)
+# Sort by signal strength (column 15) in descending order, then by frequency (column 11) in descending order
+nmcli -t -f all dev wifi list ifname "$IFACE" | sort -t: -k15,15nr -k11,11nr > "$TEMP_FILE"
+
+# Extract BSSIDs
+declare -a BSSIDS
+while IFS= read -r bssid; do
+    BSSIDS+=("$bssid")
+done < <(awk -F':' -v ssid="$SSID" '
+    $2 == ssid {
+        bssid = $4 ":" $5 ":" $6 ":" $7 ":" $8 ":" $9
+        gsub(/\\/, "", bssid)
+        print bssid
+    }
+' "$TEMP_FILE")
+
+rm "$TEMP_FILE"
+
+if [[ ${#BSSIDS[@]} -eq 0 ]]; then
+    err "No BSSIDs found for SSID: '$SSID'"
+    exit 1
+fi
+
+log "Found ${#BSSIDS[@]} BSSID(s) for '$SSID'"
+
+# --- Test all BSSIDs for speed ---
+declare -A BSSID_SPEEDS
+BEST_BSSID=""
+BEST_SPEED=999999  # Lower is better (ping time in ms)
+
+for BSSID in "${BSSIDS[@]}"; do
+    CON_NAME="tmp-${SSID}-${BSSID}"
+    CON_NAME=$(echo "$CON_NAME" | tr ' ' '_' | tr ':' '-')
+    
+    log "Testing connection speed to ${YELLOW}$BSSID${NC}"
+    nmcli con delete "$CON_NAME" >/dev/null 2>&1
+    
+    if ! nmcli con add type wifi ifname "$IFACE" con-name "$CON_NAME" \
+        ssid "$SSID" wifi.bssid "$BSSID" \
+        wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PASSWORD" >/dev/null 2>&1; then
+        err "Failed to create connection profile for $BSSID"
+        continue
+    fi
+	
+    if nmcli con up "$CON_NAME" >/dev/null 2>&1; then
+        sleep $CONNECT_TIMEOUT
+        
+        # Test ping time to determine speed
+        PING_OUTPUT=$(ping -c $SPEED_TEST_COUNT -W 2 "$PING_TARGET" 2>/dev/null)
+        if [[ $? -eq 0 ]]; then
+            # Extract average ping time
+            AVG_PING=$(echo "$PING_OUTPUT" | tail -1 | awk -F'/' '{print $5}')
+            if [[ -n "$AVG_PING" ]]; then
+                BSSID_SPEEDS[$BSSID]=$AVG_PING
+                log "BSSID $BSSID: ${AVG_PING}ms average ping"
+                
+                # Check if this is the best so far
+                if (( $(echo "$AVG_PING < $BEST_SPEED" | bc -l) )); then
+                    BEST_SPEED=$AVG_PING
+                    BEST_BSSID=$BSSID
+                fi
+            else
+                err "Could not determine ping time for $BSSID"
+            fi
+        else
+            err "No internet access via $BSSID"
+        fi
+    else
+        err "Failed to connect to $BSSID"
+    fi
+    
+    # Disconnect to test next BSSID
+    nmcli con down "$CON_NAME" >/dev/null 2>&1
+    nmcli con delete "$CON_NAME" >/dev/null 2>&1
+done
+
+# Connect to the fastest BSSID
+if [[ -n "$BEST_BSSID" ]]; then
+    CON_NAME="tmp-${SSID}-${BEST_BSSID}"
+    CON_NAME=$(echo "$CON_NAME" | tr ' ' '_' | tr ':' '-')
+    
+    success "Fastest BSSID found: $BEST_BSSID (${BEST_SPEED}ms)"
+    log "Connecting to fastest BSSID..."
+    
+    if nmcli con add type wifi ifname "$IFACE" con-name "$CON_NAME" \
+        ssid "$SSID" wifi.bssid "$BEST_BSSID" \
+        wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PASSWORD" >/dev/null 2>&1; then
+        
+        if nmcli con up "$CON_NAME" >/dev/null 2>&1; then
+            success "Connected successfully to fastest BSSID: $BEST_BSSID"
+            exit 0
+        else
+            err "Failed to reconnect to fastest BSSID"
+        fi
+    else
+        err "Failed to create final connection profile"
+    fi
+fi
+
+err "Could not establish a working connection to any BSSID"
+exit 1
