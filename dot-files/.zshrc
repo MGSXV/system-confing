@@ -126,6 +126,7 @@ alias dcu="dc up"
 alias dcd="dc down"
 alias dcb="dc build"
 alias dcr="dc restart"
+alias dcl="dc logs -f"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
